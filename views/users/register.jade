@@ -1,0 +1,24 @@
+extends ../layout
+
+block content
+  .auth-card.container.mt-5.p-4.shadow-lg
+    h2.mb-4.text-center Registracija
+
+    form(method="POST", action="/users/register")
+      .form-group.mb-3
+        label(for="username") Korisničko ime
+        input#username.form-control(type="text", name="username", required)
+
+      .form-group.mb-3
+        label(for="email") Email
+        input#email.form-control(type="email", name="email", required)
+
+      .form-group.mb-3
+        label(for="password") Lozinka
+        input#password.form-control(type="password", name="password", required)
+
+      button.btn.btn-primary.btn-block(type="submit") Registriraj se
+
+    p.mt-3.text-center
+      | Već imate račun?
+      a(href='/users/login') Prijavite se

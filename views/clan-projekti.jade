@@ -1,0 +1,74 @@
+extends layout
+
+block content
+  .container
+    // Header s korisnikom i logout
+    .row.mb-3
+      .col
+        h1.mt-4 Projekti na kojima sam član
+      .col.text-end.mt-4
+        if session && session.username
+          span.me-3 Pozdrav, 
+            strong #{session.username}
+            | !
+          a.btn.btn-sm.btn-danger(href='/users/logout')
+            i.fas.fa-sign-out-alt.me-1
+            | Odjava
+        else
+          a.btn.btn-sm.btn-primary(href='/users/login') Prijavi se
+
+    // Navigacija
+    .mb-3
+      a.btn.btn-outline-primary.me-2(href='/') Moji projekti (voditelj)
+      a.btn.btn-primary.me-2(href='/clan-projekti') Projekti kao član
+      a.btn.btn-outline-secondary(href='/arhiva') Arhiva
+
+    // Tablica projekata
+    .card
+      .card-body
+        #projectsTable
+          table.table.table-hover
+            thead
+              tr
+                th Naziv
+                th Opis
+                th Cijena
+                th Status
+                th Datum početka
+                th Datum završetka
+                th Voditelj
+                th Akcije
+            tbody#projectsTableBody
+
+    // Modal za uređivanje obavljenih poslova
+    #obavljeniPosloviModal.modal.fade(tabindex='-1')
+      .modal-dialog.modal-lg
+        .modal-content
+          .modal-header
+            h5.modal-title Uredi obavljene poslove
+          .modal-body
+            form#obavljeniPosloviForm
+              .form-group
+                label Naziv projekta
+                input.form-control#projektNaziv(type='text', disabled)
+              .form-group
+                label Obavljeni poslovi
+                #obavljeniPosloviContainer
+                  .input-group.mb-2
+                    input.form-control.obavljeni-posao(type='text', placeholder='Npr. Dizajn')
+                button.btn.btn-secondary.btn-sm#btnDodajPosao(type='button') + Dodaj posao
+          .modal-footer
+            button.btn.btn-secondary(type='button', id='btnOdustaniPoslovi') Odustani
+            button.btn.btn-primary#btnSpremiPoslove Spremi
+
+    // Modal za prikaz detalja projekta
+    #detailsModal.modal.fade(tabindex='-1')
+      .modal-dialog.modal-lg
+        .modal-content
+          .modal-header
+            h5.modal-title Detalji Projekta
+          .modal-body#detailsContent
+          .modal-footer
+            button.btn.btn-secondary(type='button', id='btnZatvoriDetalji') Zatvori
+
+    script(src='/javascripts/clan-projekti.js')

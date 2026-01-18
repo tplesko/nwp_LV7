@@ -276,3 +276,290 @@ footer {
   right: 20px;
   z-index: 9999;
 }
+
+/* ===== LOGIN / REGISTER STYLING ===== */
+.auth-card {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 2.5rem;
+  border-radius: 14px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+  margin: 5vh auto;
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.auth-card h1 {
+  text-align: center;
+  margin-bottom: 1.8rem;
+  font-weight: 700;
+  color: #333;
+}
+
+.auth-card .form-group {
+  margin-bottom: 1.2rem;
+}
+
+.auth-card label {
+  font-weight: 600;
+  color: #495057;
+}
+
+.auth-card input.form-control {
+  padding: 0.6rem 0.75rem;
+  border-radius: 8px;
+}
+
+.auth-card button {
+  width: 100%;
+  padding: 0.7rem;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  border: none;
+  color: #fff;
+  font-weight: 600;
+  font-size: 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.auth-card button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.auth-card p {
+  text-align: center;
+  margin-top: 1.2rem;
+  font-size: 0.9rem;
+}
+
+.auth-card p a {
+  color: #667eea;
+  font-weight: 600;
+}
+
+.auth-card .error {
+  background: #ffe6e6;
+  color: #b00020;
+  padding: 0.6rem 0.8rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+/* ===== LANDING PAGE STYLING ===== */
+.landing-page {
+  min-height: 70vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.6s ease-in;
+}
+
+.landing-hero {
+  padding: 3rem 1.5rem;
+}
+
+.landing-icon {
+  font-size: 5rem;
+  color: #007bff;
+  margin-bottom: 1.5rem;
+  animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.landing-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+.landing-subtitle {
+  font-size: 1.2rem;
+  color: #6c757d;
+  margin-bottom: 2rem;
+}
+
+.landing-features {
+  margin-top: 3rem;
+}
+
+.feature-card {
+  padding: 2rem 1rem;
+  border-radius: 10px;
+  background: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  height: 100%;
+}
+
+.feature-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.feature-icon {
+  font-size: 3rem;
+  color: #007bff;
+  margin-bottom: 1rem;
+}
+
+.feature-card h4 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.75rem;
+}
+
+.feature-card p {
+  color: #6c757d;
+  font-size: 0.95rem;
+  margin-bottom: 0;
+}
+
+.landing-cta {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 3rem 2rem;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+}
+
+.landing-cta h3 {
+  color: white;
+  font-weight: 700;
+  font-size: 2rem;
+}
+
+.landing-cta .btn-lg {
+  padding: 0.75rem 2rem;
+  font-size: 1.1rem;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.landing-cta .btn-primary {
+  background: white;
+  color: #667eea;
+  border: none;
+}
+
+.landing-cta .btn-primary:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(255, 255, 255, 0.3);
+}
+
+.landing-cta .btn-outline-primary {
+  border: 2px solid white;
+  color: white;
+  background: transparent;
+}
+
+.landing-cta .btn-outline-primary:hover {
+  background: white;
+  color: #667eea;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(255, 255, 255, 0.3);
+}
+
+/* ===== HEADER USER INFO STYLING ===== */
+.welcome-cta {
+  text-align: right;
+}
+
+.welcome-cta p {
+  font-size: 1rem;
+  color: #6c757d;
+  margin-bottom: 0.5rem;
+}
+
+.text-primary {
+  color: #007bff !important;
+}
+
+.d-flex.align-items-center span {
+  font-size: 1rem;
+  color: #495057;
+}
+
+.d-flex.align-items-center strong {
+  font-weight: 600;
+}
+
+.btn-danger {
+  background-color: #dc3545;
+  border-color: #dc3545;
+  display: inline-flex;
+  align-items: center;
+}
+
+.btn-danger:hover {
+  background-color: #c82333;
+  border-color: #bd2130;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+}
+
+.btn-danger i {
+  margin-right: 0.25rem;
+}
+
+/* Responsivnost za header */
+@media (max-width: 768px) {
+  .row.align-items-center {
+    text-align: center;
+  }
+  
+  .col-md-6.text-end {
+    text-align: center !important;
+    margin-top: 1rem;
+  }
+  
+  .d-flex.justify-content-end {
+    justify-content: center !important;
+  }
+  
+  .welcome-cta {
+    text-align: center;
+  }
+  
+  .landing-title {
+    font-size: 1.8rem;
+  }
+  
+  .landing-icon {
+    font-size: 3.5rem;
+  }
+  
+  .landing-cta h3 {
+    font-size: 1.5rem;
+  }
+  
+  .landing-cta .btn-lg {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+}
+
+/* Poboljšanje navbara/navigacije */
+.mb-3 a.btn {
+  margin-bottom: 0.5rem;
+}
+
+@media (max-width: 576px) {
+  .mb-3 a.btn {
+    display: block;
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+}

@@ -2,108 +2,172 @@ extends layout
 
 block content
   .container
-    h1.mt-4.mb-4 Evidencija Projekata
+    // Header s korisnikom i logout
+    .row.mb-3.align-items-center
+      .col-md-6
+        h1.mt-4.mb-0 Evidencija Projekata
+      .col-md-6.text-end.mt-4
+        if session && session.username
+          .d-flex.justify-content-end.align-items-center
+            span.me-3 Pozdrav, 
+              strong.text-primary #{session.username}
+              | !
+            a.btn.btn-sm.btn-danger(href='/users/logout')
+              i.fas.fa-sign-out-alt.me-2
+              | Odjava
+        else
+          .welcome-cta
+            p.mb-2 Dobrodošli u aplikaciju za upravljanje projektima
+            a.btn.btn-primary.me-2(href='/users/login') Prijavi se
+            a.btn.btn-outline-primary(href='/users/register') Registriraj se
 
-    // Gumb za dodavanje novog projekta
-    .mb-4
-      button.btn.btn-primary#btnNoviProjekt
-        i.fas.fa-plus
-        |  Novi Projekt
+    // Provjeri je li user prijavljen
+    if session && session.username
+      // Navigacija
+      .mb-3
+        a.btn.btn-primary.me-2(href='/') Moji projekti (voditelj)
+        a.btn.btn-outline-primary.me-2(href='/clan-projekti') Projekti kao član
+        a.btn.btn-outline-secondary(href='/arhiva') Arhiva
 
-    // Filteri
-    .card.mb-4
-      .card-body
-        .row
-          .col-md-4
-            label Status:
-            select.form-control#filterStatus
-              option(value='') Svi statusi
-              option(value='planiran') Planiran
-              option(value='u_tijeku') U tijeku
-              option(value='zavrsen') Završen
-              option(value='otkazan') Otkazan
-          .col-md-4
-            label Min. cijena:
-            input.form-control#filterMinCijena(type='number', placeholder='0')
-          .col-md-4
-            label Max. cijena:
-            input.form-control#filterMaxCijena(type='number', placeholder='100000')
+      // Gumb za dodavanje novog projekta
+      .mb-4
+        button.btn.btn-primary#btnNoviProjekt
+          i.fas.fa-plus
+          |  Novi Projekt
 
-    // Tablica projekata
-    .card
-      .card-body
-        #projectsTable
-          table.table.table-hover
-            thead
-              tr
-                th Naziv
-                th Opis
-                th Cijena
-                th Status
-                th Datum početka
-                th Datum završetka
-                th Članovi tima
-                th Akcije
-            tbody#projectsTableBody
+      // Filteri
+      .card.mb-4
+        .card-body
+          .row
+            .col-md-3
+              label Status:
+              select.form-control#filterStatus
+                option(value='') Svi statusi
+                option(value='planiran') Planiran
+                option(value='u_tijeku') U tijeku
+                option(value='zavrsen') Završen
+                option(value='otkazan') Otkazan
+            .col-md-3
+              label Min. cijena:
+              input.form-control#filterMinCijena(type='number', placeholder='0')
+            .col-md-3
+              label Max. cijena:
+              input.form-control#filterMaxCijena(type='number', placeholder='100000')
+            .col-md-3
+              label Arhivirani:
+              select.form-control#filterArhiviran
+                option(value='') Svi projekti
+                option(value='false') Aktivni
+                option(value='true') Arhivirani
 
-    // Modal za dodavanje/uređivanje projekta
-    #projectModal.modal.fade(tabindex='-1')
-      .modal-dialog.modal-lg
-        .modal-content
-          .modal-header
-            h5.modal-title#projectModalTitle Novi Projekt
-          .modal-body
-            form#projectForm
-              .form-group
-                label Naziv projekta *
-                input.form-control#naziv(type='text', required)
-              .form-group
-                label Opis projekta *
-                textarea.form-control#opis(rows='3', required)
-              .form-group
-                label Cijena (EUR) *
-                input.form-control#cijena(type='number', step='0.01', required)
-              .form-group
-                label Obavljeni poslovi
-                #obavljeniPosloviContainer
-                  .input-group.mb-2
-                    input.form-control.obavljeni-posao(type='text', placeholder='Npr. Dizajn')
-                button.btn.btn-secondary.btn-sm#btnDodajPosao(type='button') + Dodaj posao
-              .form-group
-                label Status
-                select.form-control#status
-                  option(value='planiran') Planiran
-                  option(value='u_tijeku') U tijeku
-                  option(value='zavrsen') Završen
-                  option(value='otkazan') Otkazan
-              .row
-                .col-md-6
-                  .form-group
-                    label Datum početka *
-                    input.form-control#datumPocetka(type='date', required)
-                .col-md-6
-                  .form-group
-                    label Datum završetka
-                    input.form-control#datumZavrsetka(type='date')
-              .form-group
-                label Članovi tima
-                #clanoviTimaContainer
-                  .input-group.mb-2
-                    input.form-control.clan-tima(type='text', placeholder='Ime člana tima')
-                button.btn.btn-secondary.btn-sm#btnDodajClana(type='button') + Dodaj člana
+      // Tablica projekata
+      .card
+        .card-body
+          #projectsTable
+            table.table.table-hover
+              thead
+                tr
+                  th Naziv
+                  th Opis
+                  th Cijena
+                  th Status
+                  th Datum početka
+                  th Datum završetka
+                  th Članovi tima
+                  th Arhiviran
+                  th Akcije
+              tbody#projectsTableBody
 
-          .modal-footer
-            button.btn.btn-secondary(type='button', id='btnOdustaniProjekt') Odustani
-            button.btn.btn-primary#btnSpremiProjekt Spremi
+      // Modal za dodavanje/uređivanje projekta
+      #projectModal.modal.fade(tabindex='-1')
+        .modal-dialog.modal-lg
+          .modal-content
+            .modal-header
+              h5.modal-title#projectModalTitle Novi Projekt
+            .modal-body
+              form#projectForm
+                .form-group
+                  label Naziv projekta *
+                  input.form-control#naziv(type='text', required)
+                .form-group
+                  label Opis projekta *
+                  textarea.form-control#opis(rows='3', required)
+                .form-group
+                  label Cijena (EUR) *
+                  input.form-control#cijena(type='number', step='0.01', required)
+                .form-group
+                  label Obavljeni poslovi
+                  #obavljeniPosloviContainer
+                    .input-group.mb-2
+                      input.form-control.obavljeni-posao(type='text', placeholder='Npr. Dizajn')
+                  button.btn.btn-secondary.btn-sm#btnDodajPosao(type='button') + Dodaj posao
+                .form-group
+                  label Status
+                  select.form-control#status
+                    option(value='planiran') Planiran
+                    option(value='u_tijeku') U tijeku
+                    option(value='zavrsen') Završen
+                    option(value='otkazan') Otkazan
+                .row
+                  .col-md-6
+                    .form-group
+                      label Datum početka *
+                      input.form-control#datumPocetka(type='date', required)
+                  .col-md-6
+                    .form-group
+                      label Datum završetka
+                      input.form-control#datumZavrsetka(type='date')
+                .form-group
+                  label Članovi tima (odaberi iz postojećih korisnika)
+                  select.form-control#clanoviTimaSelect(multiple, size='5')
+                    // Popunit će se dinamički iz JS-a
+                  small.form-text.text-muted Držite CTRL (CMD na Mac-u) za odabir više članova
+                .form-group.form-check
+                  input.form-check-input#arhiviran(type='checkbox')
+                  label.form-check-label(for='arhiviran') Arhiviraj projekt
+            .modal-footer
+              button.btn.btn-secondary(type='button', id='btnOdustaniProjekt') Odustani
+              button.btn.btn-primary#btnSpremiProjekt Spremi
 
-    // Modal za prikaz detalja projekta
-    #detailsModal.modal.fade(tabindex='-1')
-      .modal-dialog.modal-lg
-        .modal-content
-          .modal-header
-            h5.modal-title Detalji Projekta
-          .modal-body#detailsContent
-          .modal-footer
-            button.btn.btn-secondary(type='button', id='btnZatvoriDetalji') Zatvori
+      // Modal za prikaz detalja projekta
+      #detailsModal.modal.fade(tabindex='-1')
+        .modal-dialog.modal-lg
+          .modal-content
+            .modal-header
+              h5.modal-title Detalji Projekta
+            .modal-body#detailsContent
+            .modal-footer
+              button.btn.btn-secondary(type='button', id='btnZatvoriDetalji') Zatvori
 
-  script(src='/javascripts/projects.js')
+      script(src='/javascripts/projects.js')
+    
+    else
+      // Landing page za neprijavljene korisnike
+      .landing-page
+        .row.justify-content-center.mt-5
+          .col-md-8.text-center
+            .landing-hero
+              i.fas.fa-project-diagram.landing-icon
+              h2.landing-title Dobrodošli u sustav za upravljanje projektima
+              p.landing-subtitle Organizirajte svoje projekte, pratite napredak i surađujte s timom
+              
+              .landing-features.mt-5
+                .row
+                  .col-md-4.mb-4
+                    .feature-card
+                      i.fas.fa-tasks.feature-icon
+                      h4 Upravljanje projektima
+                      p Kreirajte i organizirajte projekte s detaljnim informacijama
+                  
+                  .col-md-4.mb-4
+                    .feature-card
+                      i.fas.fa-users.feature-icon
+                      h4 Timska suradnja
+                      p Dodajte članove tima i pratite njihov doprinos
+                  
+                  .col-md-4.mb-4
+                    .feature-card
+                      i.fas.fa-chart-line.feature-icon
+                      h4 Praćenje napretka
+                      p Pratite status projekata i obavljene poslove
+              

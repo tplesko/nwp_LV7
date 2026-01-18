@@ -2,6 +2,9 @@
 const express = require('express');
 const router = express.Router();
 const Project = require('../models/Project');
+const User = require('../models/User');
+
+const {isAuthenticated} = require('../middleware/auth');
 
 const errorResponse = (res, route, error, status = 500) => {
   console.error(`❌ ERROR IN ROUTE: ${route}`);
@@ -17,11 +20,28 @@ const errorResponse = (res, route, error, status = 500) => {
   });
 };
 
-
-// GET - Dohvati sve projekte
-router.get('/', async (req, res) => {
+router.get('/users/all', isAuthenticated, async (req, res) => {
   try {
-    const projects = await Project.find().sort({ createdAt: -1 });
+    const users = await User.find({}, 'username email');
+    res.json({ success: true, data: users });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Greška pri dohvaćanju korisnika',
+      error: error.message
+    });
+  }
+});
+
+
+// GET - Dohvati sve projekte (s članovima tima)
+router.get('/', isAuthenticated, async (req, res) => {
+  try {
+    const projects = await Project.find({ owner: req.session.userId })
+      .populate('clanoviTima', 'username email') // ✅ Dohvati podatke članova
+      .populate('owner', 'username')
+      .sort({ createdAt: -1 });
+    
     res.json({ success: true, count: projects.length, data: projects });
   } catch (error) {
     return errorResponse(res, 'GET /', error);
@@ -30,9 +50,11 @@ router.get('/', async (req, res) => {
 
 
 // GET - Dohvati projekt po ID-u
-router.get('/:id', async (req, res) => {
+router.get('/:id', isAuthenticated, async (req, res) => {
   try {
-    const project = await Project.findById(req.params.id);
+    const project = await Project.findById(req.params.id)
+      .populate('clanoviTima', 'username email')
+      .populate('owner', 'username');
 
     if (!project) {
       return res.status(404).json({
@@ -43,16 +65,20 @@ router.get('/:id', async (req, res) => {
     }
 
     res.json({ success: true, data: project });
-
   } catch (error) {
     return errorResponse(res, 'GET /:id', error);
   }
 });
 
 // POST - Kreiraj novi projekt
-router.post('/', async (req, res) => {
+router.post('/', isAuthenticated, async (req, res) => {
   try {
-    const project = await Project.create(req.body);
+    const projectData = {
+      ...req.body,
+      owner: req.session.userId // ✅ Postavi vlasnika
+    };
+    
+    const project = await Project.create(projectData);
     
     res.status(201).json({
       success: true,
@@ -79,10 +105,13 @@ router.post('/', async (req, res) => {
 
 
 // DELETE - Obriši projekt
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', isAuthenticated, async (req, res) => {
   try {
-    const project = await Project.findByIdAndDelete(req.params.id);
-
+    const project = await Project.findOneAndDelete({
+      _id: req.params.id,
+      owner: req.session.userId
+    });
+    
     if (!project) {
       return res.status(404).json({
         success: false,
@@ -101,7 +130,7 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-router.put('/:id', async (req, res) => {
+router.put('/:id', isAuthenticated, async (req, res) => {
   try {
     console.log("=== INCOMING UPDATE REQUEST ===");
     console.log("req.params.id:", req.params.id);
@@ -115,8 +144,18 @@ router.put('/:id', async (req, res) => {
     if (updateData.cijena !== undefined && updateData.cijena !== "")
       updateData.cijena = Number(updateData.cijena);
 
-      if (updateData.datumPocetka) updateData.datumPocetka = new Date(updateData.datumPocetka);
-      if (updateData.datumZavrsetka) updateData.datumZavrsetka = new Date(updateData.datumZavrsetka);      
+    if (updateData.datumPocetka) updateData.datumPocetka = new Date(updateData.datumPocetka);
+    if (updateData.datumZavrsetka) updateData.datumZavrsetka = new Date(updateData.datumZavrsetka);
+    
+    // ✅ DODAJ OVO - Normalize arhiviran
+    if (updateData.arhiviran !== undefined) {
+      updateData.arhiviran = Boolean(updateData.arhiviran);
+    }
+    
+    // ✅ DODAJ OVO - Ensure clanoviTima is array
+    if (updateData.clanoviTima && !Array.isArray(updateData.clanoviTima)) {
+      updateData.clanoviTima = [updateData.clanoviTima];
+    }
 
     // -------------------------------------
     // 2️⃣ REMOVE EMPTY VALUES
@@ -142,7 +181,9 @@ router.put('/:id', async (req, res) => {
       req.params.id,
       { $set: updateData },
       { new: true, runValidators: true, context: "query" }
-    );
+    )
+    .populate('clanoviTima', 'username email')
+    .populate('owner', 'username');
 
     if (!updatedProject) {
       return res.status(404).json({
@@ -187,12 +228,16 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-
-
 // GET - Pretraga projekata po statusu
-router.get('/status/:status', async (req, res) => {
+router.get('/status/:status', isAuthenticated, async (req, res) => {
   try {
-    const projects = await Project.find({ status: req.params.status });
+    const projects = await Project.find({
+      owner: req.session.userId,
+      cijena: {
+        $gte: req.params.min,
+        $lte: req.params.max
+      }
+    });    
     
     res.json({
       success: true,
@@ -209,7 +254,7 @@ router.get('/status/:status', async (req, res) => {
 });
 
 // GET - Projekti u određenom cjenovnom rangu
-router.get('/cijena/:min/:max', async (req, res) => {
+router.get('/cijena/:min/:max', isAuthenticated, async (req, res) => {
   try {
     const projects = await Project.find({
       cijena: {
@@ -231,5 +276,123 @@ router.get('/cijena/:min/:max', async (req, res) => {
     });
   }
 });
+
+// GET - dashboard stranica
+router.get('/', isAuthenticated, async (req, res) => {
+  try {
+    const projects = await Project.find({ owner: req.session.userId }).sort({ createdAt: -1 });
+    res.render('projects/index', { title: 'Evidencija Projekata', projects });
+  } catch (err) {
+    res.status(500).send('Greška pri učitavanju projekata');
+  }
+});
+
+// GET - Dohvati sve korisnike (za dropdown članova tima)
+router.get('/users/all', isAuthenticated, async (req, res) => {
+  try {
+    const User = require('../models/User');
+    const users = await User.find({}, 'username email'); // Samo username i email
+    
+    res.json({ success: true, data: users });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Greška pri dohvaćanju korisnika',
+      error: error.message
+    });
+  }
+});
+
+// GET - Projekti na kojima sam član
+router.get('/member/projects', isAuthenticated, async (req, res) => {
+  try {
+    const projects = await Project.find({ 
+      clanoviTima: req.session.userId,
+      arhiviran: false
+    })
+    .populate('clanoviTima', 'username email')
+    .populate('owner', 'username')
+    .sort({ createdAt: -1 });
+    
+    res.json({ success: true, count: projects.length, data: projects });
+  } catch (error) {
+    return errorResponse(res, 'GET /member/projects', error);
+  }
+});
+
+// GET - Arhivirani projekti (kao voditelj ili član)
+router.get('/archived/all', isAuthenticated, async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    
+    const projects = await Project.find({ 
+      arhiviran: true,
+      $or: [
+        { owner: userId },
+        { clanoviTima: userId }
+      ]
+    })
+    .populate('clanoviTima', 'username email')
+    .populate('owner', 'username')
+    .sort({ createdAt: -1 });
+    
+    // Dodaj info o ulozi
+    const projectsWithRole = projects.map(p => {
+      const isOwner = p.owner._id.toString() === userId.toString();
+      return {
+        ...p.toObject(),
+        userRole: isOwner ? 'owner' : 'clan'
+      };
+    });
+    
+    res.json({ success: true, count: projectsWithRole.length, data: projectsWithRole });
+  } catch (error) {
+    return errorResponse(res, 'GET /archived/all', error);
+  }
+});
+
+// PUT - Ažuriraj samo obavljene poslove (za članove)
+router.put('/member/:id/poslovi', isAuthenticated, async (req, res) => {
+  try {
+    const project = await Project.findById(req.params.id);
+    
+    if (!project) {
+      return res.status(404).json({
+        success: false,
+        message: 'Projekt nije pronađen'
+      });
+    }
+    
+    // Provjeri je li korisnik član
+    const isMember = project.clanoviTima.some(
+      id => id.toString() === req.session.userId.toString()
+    );
+    
+    if (!isMember) {
+      return res.status(403).json({
+        success: false,
+        message: 'Nemate pristup ovom projektu'
+      });
+    }
+    
+    // Ažuriraj samo obavljeniPoslovi
+    project.obavljeniPoslovi = req.body.obavljeniPoslovi || [];
+    await project.save();
+    
+    const updatedProject = await Project.findById(req.params.id)
+      .populate('clanoviTima', 'username email')
+      .populate('owner', 'username');
+    
+    res.json({
+      success: true,
+      message: 'Obavljeni poslovi uspješno ažurirani',
+      data: updatedProject
+    });
+    
+  } catch (error) {
+    return errorResponse(res, 'PUT /member/:id/poslovi', error);
+  }
+});
+
 
 module.exports = router;

@@ -1,0 +1,71 @@
+extends layout
+
+block content
+  .container
+    // Header s korisnikom i logout
+    .row.mb-3
+      .col
+        h1.mt-4 Arhiva projekata
+      .col.text-end.mt-4
+        if session && session.username
+          span.me-3 Pozdrav, 
+            strong #{session.username}
+            | !
+          a.btn.btn-sm.btn-danger(href='/users/logout')
+            i.fas.fa-sign-out-alt.me-1
+            | Odjava
+        else
+          a.btn.btn-sm.btn-primary(href='/users/login') Prijavi se
+
+    // Navigacija
+    .mb-3
+      a.btn.btn-outline-primary.me-2(href='/') Moji projekti (voditelj)
+      a.btn.btn-outline-primary.me-2(href='/clan-projekti') Projekti kao član
+      a.btn.btn-secondary(href='/arhiva') Arhiva
+
+    // Filteri
+    .card.mb-4
+      .card-body
+        .row
+          .col-md-6
+            label Tip:
+            select.form-control#filterTip
+              option(value='') Svi projekti
+              option(value='owner') Kao voditelj
+              option(value='clan') Kao član
+          .col-md-6
+            label Status:
+            select.form-control#filterStatus
+              option(value='') Svi statusi
+              option(value='planiran') Planiran
+              option(value='u_tijeku') U tijeku
+              option(value='zavrsen') Završen
+              option(value='otkazan') Otkazan
+
+    // Tablica projekata
+    .card
+      .card-body
+        #projectsTable
+          table.table.table-hover
+            thead
+              tr
+                th Naziv
+                th Opis
+                th Status
+                th Datum početka
+                th Datum završetka
+                th Uloga
+                th Akcije
+            tbody#projectsTableBody
+
+    // Modal za prikaz detalja projekta
+    #detailsModal.modal.fade(tabindex='-1')
+      .modal-dialog.modal-lg
+        .modal-content
+          .modal-header
+            h5.modal-title Detalji Projekta
+          .modal-body#detailsContent
+          .modal-footer
+            button.btn.btn-secondary(type='button', id='btnZatvoriDetalji') Zatvori
+
+    script(src='/javascripts/arhiva.js')

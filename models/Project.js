@@ -22,8 +22,8 @@ const projectSchema = new mongoose.Schema({
     trim: true
   }],
   clanoviTima: [{ 
-    type: String, 
-    trim: true 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: 'User'
   }],
   datumPocetka: {
     type: Date,
@@ -48,6 +48,15 @@ const projectSchema = new mongoose.Schema({
     type: String,
     enum: ['planiran', 'u_tijeku', 'zavrsen', 'otkazan'],
     default: 'planiran'
+  },
+  owner: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  arhiviran: {
+    type: Boolean,
+    default: false
   }
 }, {
   timestamps: true // Automatski dodaje createdAt i updatedAt

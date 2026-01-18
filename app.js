@@ -1,11 +1,11 @@
 // app.js
 require('dotenv').config();
+const session = require('express-session');
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
-var connectDB = require('./config/database');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
@@ -17,8 +17,12 @@ var app = express();
 const mongoose = require('mongoose');
 
 mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log('MongoDB connected'))
+  .then(() => {
+    console.log('MongoDB connected');
+    console.log('Connected to DB:', mongoose.connection.name);
+  })
   .catch(err => console.error('MongoDB connection error:', err));
+
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -28,6 +32,21 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+
+app.use(session({
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false,
+  cookie: { 
+    maxAge: 1000 * 60 * 60 * 24 // 24h
+  }
+}));
+
+app.use((req, res, next) => {
+  res.locals.session = req.session;
+  next();
+});
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
